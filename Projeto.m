@@ -37,17 +37,18 @@ BW = imopen(BW,strel('disk',10));
 BW = imdilate(BW,strel('disk',5));
 BW = imerode(BW,strel('disk',4));
 BW = imopen(BW,strel('disk',11));
-figure, imshow(BW); title('Fecho');
+imgProcessed = BW;
+figure, imshow(imgProcessed); title('Fecho');
 
 % 1- Count number of objects in the scene
-% [lb num]= bwlabel(imgProcessed);
-% figure, imshow(imgOriginal); title(['1- Number of objects: ', num2str(num)]);
+%[lb num]= bwlabel(BW);
+%figure, imshow(imgOriginal); title(['1- Number of objects: ', num2str(num)]);
 
 % 1- Count number of objects in the scene
 % 2- Visualization centroid, perimeter and area 
 % 3 - Relative distance of the objects
 % 4 - Derivative over the boundaries
-StatsDistance(imgOriginal, BW);
+StatsDistance(imgOriginal, imgProcessed);
 
 % figure,
 % subplot(2,3,5); imshow(histeq(lb,10000)); title('Labels');
