@@ -43,7 +43,10 @@ figure, imshow(BW); title('Fecho');
 % [lb num]= bwlabel(imgProcessed);
 % figure, imshow(imgOriginal); title(['1- Number of objects: ', num2str(num)]);
 
-% 2- Visualization centroid, perimeter and area and 3 - Relative distance of the objects
+% 1- Count number of objects in the scene
+% 2- Visualization centroid, perimeter and area 
+% 3 - Relative distance of the objects
+% 4 - Derivative over the boundaries
 StatsDistance(imgOriginal, BW);
 
 % figure,
@@ -55,8 +58,8 @@ StatsDistance(imgOriginal, BW);
 % areas = [stats.Area];
 % [dummy indM] = max(areas);
 % imgBr = (lb == indM);
-% subplot(2,3,3); imshow(imgBr); title('Maior área');
-% subplot(2,3,4); imshow(img.*uint8(imgBr)); title('Cérebro');
+% subplot(2,3,3); imshow(imgBr); title('Maior ï¿½rea');
+% subplot(2,3,4); imshow(img.*uint8(imgBr)); title('Cï¿½rebro');
 % 
 % areas = [];
 % for k=1 : num

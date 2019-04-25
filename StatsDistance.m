@@ -2,7 +2,7 @@ function StatsDistance(imgOriginal, imgProcessed)
     figure;
     imshow(imgOriginal);
 
-% Para o 1 e o 2:
+% Para o 1, 2 e 3:
     stats1 = regionprops(bwlabel(imgProcessed,8),...
                         'Eccentricity',...
                         'Area',...
@@ -19,7 +19,7 @@ function StatsDistance(imgOriginal, imgProcessed)
     end
     
     
-% Para o 3:
+% Para o 4:
     boundsArray = [];
     boundsArray = derivateBoundaries(imgProcessed);
     title(['Number of objects in the image: ', num2str(sz(2)),...
