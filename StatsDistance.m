@@ -12,9 +12,7 @@ function StatsDistance(imgOriginal, imgProcessed)
                         'MinorAxisLength');
 
     objIndex = find([stats1.Area] > 1000);
-    sz = size(objIndex);
-    title(['Number of objects in the image: ', num2str(sz(2))]);
-    
+    sz = size(objIndex);    
     for i = 1 : numel(objIndex)
         box1 = InitDraw(i,objIndex,stats1);
         set(box1,'buttondownfcn',{@ShowInfo,i,objIndex,imgOriginal,stats1});
@@ -22,7 +20,10 @@ function StatsDistance(imgOriginal, imgProcessed)
     
     
 % Para o 3:
+    boundsArray = [];
     boundsArray = derivateBoundaries(imgProcessed);
+    title(['Number of objects in the image: ', num2str(sz(2)),...
+        '. Click on a region to see its stats.']);
 end
 
 function box = InitDraw(i,objIndex,stats)
@@ -96,7 +97,7 @@ function ShowInfo(~,~,i,objIndex,imgOriginal,stats)
 end
 
 
-function boundsArray = derivateBoundaries(imgProcessed)
+function bounds = derivateBoundaries(imgProcessed)
     [boundaries,labeledMatrix] = bwboundaries(imgProcessed,'holes');
     stats2 = regionprops(labeledMatrix,'Area','Centroid');
     threshold = 0.94;
@@ -136,9 +137,5 @@ function boundsArray = derivateBoundaries(imgProcessed)
            'Color','black',...
            'FontSize',14,...
            'FontWeight','bold');
-    end
-    
-    title(['Metrics closer to 1 indicate that ',...
-           'the object is approximately round']);
-    
+    end    
 end
