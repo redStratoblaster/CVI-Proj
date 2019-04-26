@@ -50,6 +50,9 @@ figure, imshow(imgProcessed); title('Fecho');
 % 4 - Derivative over the boundaries
 StatsDistance(imgOriginal, imgProcessed);
 
+% 7
+selectionObject(imgOriginal, imgProcessed);
+
 % figure,
 % subplot(2,3,5); imshow(histeq(lb,10000)); title('Labels');
 % subplot(2,3,1); imshow(mat2gray(lb)); title('Labels BW');
