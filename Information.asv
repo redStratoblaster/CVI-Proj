@@ -1,7 +1,6 @@
+
 function Information(imgOriginal, imgProcessed)
     imshow(imgOriginal);
-    
-% Para o 1, 2 e 3:
     stats1 = regionprops(bwlabel(imgProcessed,8),...
                         'Eccentricity',...
                         'Area',...
@@ -9,15 +8,9 @@ function Information(imgOriginal, imgProcessed)
                         'BoundingBox',...
                         'Perimeter',...
                         'MinorAxisLength');
-
     objectButtons(stats1, imgOriginal, imgProcessed);
     objIndex = find([stats1.Area] > 1000);
     sz = size(objIndex); 
-    
-    
-% Para o 4:
-    boundsArray = [];
-    boundsArray = derivateBoundaries(imgProcessed);
     totalAmount = getCoinValue(imgOriginal, 0);
     
     titleLine1 = strcat('Number of objects:',num2str(sz(2)),...
@@ -25,7 +18,6 @@ function Information(imgOriginal, imgProcessed)
     titleLine3 = 'Click on a region to see information.';
     title(titleLine1);
     xlabel(titleLine3);
-% para o 5
     interface(imgOriginal, imgProcessed, stats1);
 end
 
@@ -61,6 +53,7 @@ function ShowInfo(~,~,i,objIndex,imgOriginal, imgProcessed, stats)
     imshow(imgOriginal);
     interface(imgOriginal,imgProcessed, stats);
     statsObj = stats(objIndex);
+    xlabel('Click on a region to see information.');
     for index = 1 : numel(objIndex)
         if(index == i)
             
@@ -83,7 +76,7 @@ function ShowInfo(~,~,i,objIndex,imgOriginal, imgProcessed, stats)
             y2 = statsObj(index).Centroid(2);
             x=[x1,x2];
             y=[y1,y2];
-            line(x,y,'Color','red','LineStyle','--');
+            line(x,y,'Color','green','LineStyle','-');
             distance = num2str(sqrt((x2-x1)^2+(y2-y1)^2));
             
             text(statsObj(index).Centroid(1),...
@@ -92,7 +85,7 @@ function ShowInfo(~,~,i,objIndex,imgOriginal, imgProcessed, stats)
                  'color','black',...
                  'HorizontalAlignment', 'center',...
                  'VerticalAlignment', 'middle',...
-                 'FontSize',11);
+                 'FontSize',12);
              
              text(statsObj(index).Centroid(1),...
                  statsObj(index).Centroid(2)+13,...
@@ -100,7 +93,7 @@ function ShowInfo(~,~,i,objIndex,imgOriginal, imgProcessed, stats)
                  'color','black',...
                  'HorizontalAlignment', 'center',...
                  'VerticalAlignment', 'middle',...
-                 'FontSize',11);
+                 'FontSize',12);
              
         end
         box2 = InitDraw(index,objIndex,stats);
@@ -124,7 +117,7 @@ function showOrder(imgProcessed, orderArray, stats, type)
                boundingBoxI(2),...
                metric_string,...
                'Color','black',...
-               'FontSize',12,...
+               'FontSize',15,...
                'FontWeight','bold');
        end 
    else
@@ -140,7 +133,7 @@ function showOrder(imgProcessed, orderArray, stats, type)
                boundingBoxI(2),...
                metric_string,...
                'Color','black',...
-               'FontSize',12,...
+               'FontSize',15,...
                'FontWeight','bold');
            end
            if(strcmp(type,'Area'))
@@ -152,7 +145,7 @@ function showOrder(imgProcessed, orderArray, stats, type)
                boundingBoxI(2),...
                metric_string,...
                'Color','black',...
-               'FontSize',12,...
+               'FontSize',15,...
                'FontWeight','bold');
            end  
        end
@@ -197,49 +190,23 @@ function bounds = derivateBoundaries(imgProcessed)
            boundary(1,1),...
            metric_string,...
            'Color','black',...
-           'FontSize',12,...
+           'FontSize',15,...
            'FontWeight','bold');
     end    
 end
 
-function bounds = derivateOrdered(imgProcessed, orderedArray, stats)
-    [boundaries,labeledMatrix] = bwboundaries(imgProcessed,'noholes');
-    stats2 = regionprops(labeledMatrix,'Area','Centroid');
-    threshold = 0.94;
-    bounds = [];
-    
+function derivateOrdered(imgProcessed, orderedArray, stats, bounds)
     hold on
-    for i = 1:length(boundaries)
-      plot(boundaries{i}(:,2), boundaries{i}(:,1), 'r', 'LineWidth', 2)
-    
-      % obtain (X,Y) boundary coordinates corresponding to label 'k'
-      boundary = boundaries{i};
-
-      % compute a simple estimate of the object's perimeter
-      delta_sq = diff(boundary).^2;    
-      perimeter = sum(sqrt(sum(delta_sq,2)));
-
-      % obtain the area calculation corresponding to label 'k'
-      area = stats2(i).Area;
-
-      % compute the roundness metric
-      metric = 4*pi*area/perimeter^2;
-      
-      index = find(orderedArray == metric)
-      
-      bounds = [bounds, metric];
-
-      % display the results
-      metric_string = index;
-      
+    for i = 1:length(bounds)
+      index = find(orderedArray == bounds(i));
       statsObj = stats(i);
       boundingBoxI = statsObj.BoundingBox;
-       metric_string = sprintf('%d',metric_string);
+       metric_string = sprintf('%d',index);
        text(boundingBoxI(1),...
            boundingBoxI(2),...
            metric_string,...
            'Color','black',...
-           'FontSize',12,...
+           'FontSize',15,...
            'FontWeight','bold');
     end    
 end
@@ -259,7 +226,6 @@ function arraySharpness = calculateSharpness(imgProcessed)
     end
 end
 
-
 % metric.
 function [sharpness]=estimate_sharpness(G)
     [Gx, Gy]=gradient(G);
@@ -271,63 +237,62 @@ end
         bg = uibuttongroup('Visible','off',...
             'Position',[0 0 .15 1],...
             'SelectionChangedFcn',{@bselection,imgOriginal,imgProcessed,stats});
-        %TODO mudar a balda pq ta igual a do tiago
         % Create three radio buttons in the button group.
-        r1 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Order by Perimeter',...
             'Position',[10 800 200 30],...
             'HandleVisibility','off');
 
-        r2 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Order by Area',...
             'Position',[10 700 200 30],...
             'HandleVisibility','off');
 
-        r3 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Order by Circularity',...
             'Position',[10 600 200 30],...
             'HandleVisibility','off');
         
-        r4 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Order by Sharpness',...
             'Position',[10 500 200 30],...
             'HandleVisibility','off');
         
-        r5 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Amount of Money',...
             'Position',[10 400 200 30],...
             'HandleVisibility','off');
         
-        r6 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Derivative',...
             'Position',[10 300 200 30],...
             'HandleVisibility','off');
         
-        r7 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Order from selected object',...
             'Position',[10 200 200 30],...
             'HandleVisibility','off');
         
-        r7 = uicontrol(bg,'Style','radiobutton',...
+        uicontrol(bg,'Style','radiobutton',...
             'String','Reset',...
             'Position',[10 0 100 30],...
             'HandleVisibility','off');
 
         % Make the uibuttongroup visible after creating child objects.
         bg.Visible = 'on';
-        
         set(bg,'selectedobject',[]);
  end
  
- function clearScreen(imgOriginal,imgProcessed, stats)
+ function clearScreen(imgOriginal,imgProcessed, stats, titleString)
         clf('reset');
         imshow(imgOriginal);
         interface(imgOriginal,imgProcessed, stats);
         objectButtons(stats, imgOriginal, imgProcessed);
+        title(titleString);
+        xlabel('Click on a region to see information.');
  end
  
  function bselection(~,event,imgOriginal,imgProcessed, stats)
-        
         switch event.NewValue.String
             case 'Order by Perimeter'
                 clearScreen(imgOriginal,imgProcessed, stats, 'Objects ordered by Perimiter');
@@ -338,10 +303,10 @@ end
                 orderedArray = sort([stats(:).Area]); 
                 showOrder(imgProcessed, orderedArray, stats, 'Area');
             case 'Order by Circularity'
-                clearScreen(imgOriginal,imgProcessed, stats, 'Objects ordered by Circularity');
                 boundries = derivateBoundaries(imgProcessed);
+                clearScreen(imgOriginal,imgProcessed, stats, 'Objects ordered by Circularity');
                 orderedArray = sort(boundries);
-                derivateOrdered(imgProcessed, orderedArray, stats);
+                derivateOrdered(imgProcessed, orderedArray, stats, boundries);
             case 'Order by Sharpness'
                 clearScreen(imgOriginal,imgProcessed, stats, 'Objects ordered by Sharpness');
                 arraySharpness = calculateSharpness(imgProcessed);
@@ -351,52 +316,53 @@ end
                 clearScreen(imgOriginal,imgProcessed, stats, 'Objects boundary derivate');
                 derivateBoundaries(imgProcessed);
             case 'Amount of Money'
-                clearScreen(imgOriginal,imgProcessed, stats, 'Objects ordered by Perimiter');
+                clearScreen(imgOriginal,imgProcessed, stats, 'Amount of money');
                 getCoinValue(imgOriginal,1);
             case 'Order from selected object'
                  selectionObject(imgOriginal, imgProcessed);
             case 'Reset'
                  clf('reset');
-                 Information(imgOriginal, imgProcessed)
-                 
+                 Information(imgOriginal, imgProcessed) 
         end
 
  end
     
  
 function coinAmount = getCoinValue(I, total)
-    [centers,radii] = imfindcircles(I,[40 90], 'Sensitivity',0.9);
+    [centers,radius] = imfindcircles(I,[40 90], 'Sensitivity',0.9);
     coinAmount = 0;
-    for idx = 1 : numel(radii)
+    for i = 1 : numel(radius)
         switch true
-            case 54< radii(idx) && radii(idx)< 57
+            case 54< radius(i) && radius(i)< 57
                 coinAmount = coinAmount + 0.01;
                 coinValue = 0.01;
-            case 64< radii(idx) && radii(idx)< 67
+            case 64< radii(i) && radius(i)< 67
                 coinAmount = coinAmount + 0.02;
                 coinValue = 0.02;
-            case 72< radii(idx) && radii(idx)< 76
+            case 72< radii(i) && radii(i)< 76
                 coinAmount = coinAmount + 0.05;   
                 coinValue = 0.05;
-            case 67< radii(idx) && radii(idx)< 72
+            case 67< radii(i) && radii(i)< 72
                 coinAmount = coinAmount + 0.1;
                 coinValue = 0.1;
-            case 76< radii(idx) && radii(idx)< 79
+            case 76< radii(i) && radii(i)< 79
                 coinAmount = coinAmount + 0.20;
                 coinValue = 0.2;
-            case 83< radii(idx) && radii(idx)< 86
+            case 83< radii(i) && radii(i)< 86
                 coinAmount = coinAmount + 0.50;
                 coinValue = 0.5;
-            case 79< radii(idx) && radii(idx)< 83
+            case 79< radii(i) && radii(i)< 83
                 coinAmount = coinAmount + 1;
                 coinValue = 1;
-            case 87< radii(idx) && radii(idx)< 92
+            case 87< radii(i) && radii(i)< 92
                 coinAmount = coinAmount + 2;
                 coinValue = 2;
         end   
         if(total)
-            text(centers(idx,1),centers(idx,2)-radii(idx)-20,[num2str(coinValue), ' ',char(8364)],...
-                'color','g','HorizontalAlignment', 'center','VerticalAlignment', 'middle','FontSize',12);
+            text(centers(i,1)-radii(i),centers(i,2)-radii(i),[num2str(coinValue),'€'],...
+                'color','g','HorizontalAlignment', 'center','VerticalAlignment', 'middle','FontSize',15);
+            titleLine1 = strcat('Amount of money:',num2str(coinAmount),'€');
+            title(titleLine1);
         end
     end
 end
