@@ -27,7 +27,6 @@ imgOriginal = imread('MATERIAL/database/Moedas3.jpg');
 % PREPROCESSING
 
 imgR = imgOriginal(:,:,1);
-figure, imshow(imgR);
 BW = imgR >= threshold;
 se = strel('disk', 7);
 
@@ -38,7 +37,6 @@ BW = imdilate(BW,strel('disk',5));
 BW = imerode(BW,strel('disk',4));
 BW = imopen(BW,strel('disk',11));
 imgProcessed = BW;
-figure, imshow(imgProcessed); title('Fecho');
 
 % 1- Count number of objects in the scene
 %[lb num]= bwlabel(BW);
@@ -48,10 +46,10 @@ figure, imshow(imgProcessed); title('Fecho');
 % 2- Visualization centroid, perimeter and area 
 % 3 - Relative distance of the objects
 % 4 - Derivative over the boundaries
-StatsDistance(imgOriginal, imgProcessed);
+figure; 
+Information(imgOriginal, imgProcessed);
 
-% 7
-selectionObject(imgOriginal, imgProcessed);
+
 
 % figure,
 % subplot(2,3,5); imshow(histeq(lb,10000)); title('Labels');

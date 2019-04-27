@@ -82,29 +82,29 @@ function [sharpness]=estimate_sharpness(G)
     sharpness=sum(sum(S))./(numel(Gx));
 end
 
-    function selectObject(~,~,idx,stats,I,Ibw, arrayOfBounds,arrayOfSharps)
-        clf('reset');
-        [labeled, numObjects] = bwlabel(Ibw,4);
-        subplot(2,numObjects,[1 numObjects]), imshow(I);
-        myui(I,Ibw,idx, arrayOfBounds,arrayOfSharps);
-        title(['Objects ordered by selected object and category']);
-        
-        eccentricities = [stats.Eccentricity];
-        idxOfCoins = find(eccentricities);
-        statsObj = stats(idxOfCoins);
-        BBcolors = [1,1,1];
+function selectObject(~,~,idx,stats,I,Ibw, arrayOfBounds,arrayOfSharps)
+    clf('reset');
+    [labeled, numObjects] = bwlabel(Ibw,4);
+    subplot(2,numObjects,[1 numObjects]), imshow(I);
+    myui(I,Ibw,idx, arrayOfBounds,arrayOfSharps);
+    title(['Objects ordered by selected object and category']);
 
-        for idy = 1 : numel(idxOfCoins)
-            if(idx == idy)
-                BBcolors = [0,0,0];
+    eccentricities = [stats.Eccentricity];
+    idxOfCoins = find(eccentricities);
+    statsObj = stats(idxOfCoins);
+    BBcolors = [1,1,1];
 
-            else
-                BBcolors = [1,1,1];
-            end
-            h = drawBBandCentroid(idy,statsObj,BBcolors);
-            set(h,'buttondownfcn',{@selectObject,idy,stats,I,Ibw, arrayOfBounds,arrayOfSharps});
+    for idy = 1 : numel(idxOfCoins)
+        if(idx == idy)
+            BBcolors = [0,0,0];
+
+        else
+            BBcolors = [1,1,1];
         end
+        h = drawBBandCentroid(idy,statsObj,BBcolors);
+        set(h,'buttondownfcn',{@selectObject,idy,stats,I,Ibw, arrayOfBounds,arrayOfSharps});
     end
+end
 
     function h = drawBBandCentroid(point,statsObj,BBcolors)
         text(statsObj(point).Centroid(1),statsObj(point).Centroid(2),'x','color','black','HorizontalAlignment', 'center','VerticalAlignment', 'middle','FontSize',15);
