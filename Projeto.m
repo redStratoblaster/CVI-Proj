@@ -21,7 +21,7 @@ clear all, close all
 threshold = 125;
 minArea = 50;
 
-imgOriginal = imread('MATERIAL/database/Moedas4.jpg');
+imgOriginal = imread('MATERIAL/database/Moedas3.jpg');
 
 % PREPROCESSING
 
