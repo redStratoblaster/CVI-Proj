@@ -529,29 +529,19 @@ function circularities = calculateCircularity(imgProcessed)
     for i = 1:length(boundaries)
       plot(boundaries{i}(:,2), boundaries{i}(:,1), 'r', 'LineWidth', 1)
     
-      % obtain (X,Y) boundary coordinates corresponding to label 'k'
       boundary = boundaries{i};
-
-      % compute a simple estimate of the object's perimeter
       delta_sq = diff(boundary).^2;    
       perimeter = sum(sqrt(sum(delta_sq,2)));
 
-      % obtain the area calculation corresponding to label 'k'
       area = stats2(i).Area;
-
-      % compute the roundness metric
-      metric = 4*pi*area/perimeter^2;
+      circularity = 4*pi*area/perimeter^2;
       
-      circularities = [circularities, metric];
+      circularities = [circularities, circularity];
 
-      % display the results
-      metric_string = sprintf('%2.2f',metric);
-
-     
       boundingBoxI = stats2(i).BoundingBox;
       text(boundingBoxI(1)+(boundingBoxI(3)/2)-20,...
            boundingBoxI(2)+(boundingBoxI(4)/2)-20,...
-           metric_string,...
+           sprintf('%2.2f',circularity),...
            'Color','red',...
            'FontSize',15,...
            'FontWeight','bold');
