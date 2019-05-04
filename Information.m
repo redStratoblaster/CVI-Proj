@@ -207,6 +207,7 @@ function derivatives(imgOriginal, imgProcessed)
     panel.FontSize = 14;
     panel.FontWeight = 'bold';
     
+    z=1;%z is to help printing subplots in correct order
     for i=1:length(boundaries)    
 
         [row, col] = find(labeledMatrix==i);
@@ -214,7 +215,7 @@ function derivatives(imgOriginal, imgProcessed)
             (max(col)-min(col)+10) (max(row)-min(row)+10)]);
 
         figure(derivatesFigure);
-        subplot(1,1,1,'Parent',panel), imshow(croppedLabel);title(['Object id: ' num2str(i)]);
+        subplot(1,1,(z),'Parent',panel), imshow(croppedLabel);title(['Object id: ' num2str(i)]);
 
         % Find boundaries.
         boundaries = bwboundaries(labeledMatrix==i);
@@ -230,8 +231,9 @@ function derivatives(imgOriginal, imgProcessed)
               dy = [dy, deltaX(m)-deltaX(m-1)/deltaY(m)-deltaY(m-1)];
               m = m + 1;
           end
-          subplot(1,1,2,'Parent',panel), plot(dy);
-        end    
+          subplot(1,1,(z+1),'Parent',panel), plot(dy);
+        end   
+        z=z+2;    
     end
     set(gcf,'units','normalized','outerposition',[0 0 1 1])
 end

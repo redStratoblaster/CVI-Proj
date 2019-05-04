@@ -196,80 +196,27 @@ function showOrder(imgProcessed, orderArray, stats, type)
 end
 
 
-% NOT OURS 
-% function derivatives(imgOriginal, imgProcessed)
-%     f = figure;
-% 
-% [boundaries,labeledMatrix] = bwboundaries(imgProcessed,'noholes');
-% %Pannel to fit all of the subplots. useful to have a super title.
-% panel = uipanel('Parent',f,'BorderType','none'); 
-% panel.Title = 'Derivative of the objects'' boundary (deltaX / deltaT)'; 
-% panel.TitlePosition = 'centertop'; 
-% panel.FontSize = 12;
-% panel.FontWeight = 'bold';
-% 
-% z=1;%aux variable to help printing subplots in correct order
-% for i=1:length(boundaries)    
-% 
-%     [row, col] = find(labeledMatrix==i);
-%     len = max(row)-min(row)+20;
-%     breadth=max(col)-min(col)+20;
-%     sy=min(col)-10;
-%     sx=min(row)-10;
-%     
-%     croppedLabel = imcrop(imgOriginal,[sy sx breadth len]);
-%     
-%     figure(f);
-%     subplot(4,4,(z),'Parent',panel), imshow(croppedLabel);title(['Object #' num2str(i)]);
-%     
-%     %Plot the deltaX / delta T values
-%     
-%     % Find the boundaries.  Each boundary is in a cell.
-%     boundaries = bwboundaries(labeledMatrix==i);
-%     numberOfBoundaries = size(boundaries, 1);
-%     % Display each boundary over the image in red.
-%     
-%     for k = 1 : numberOfBoundaries
-%       % Pull N by 2 array from k'th cell.
-%       thisBoundary = boundaries{k}; 
-%       % Get x from the N-by-2 array.
-%       deltaX = thisBoundary(:,2);
-%       subplot(4,4,(z+1),'Parent',panel), plot(deltaX);title(['Object #' num2str(i) '''s boundary derivative' ]);
-%     end    
-%        
-%     
-%     z=z+2;    
-%     
-% end
-% 
-% %set previous figure panel window with maximized size
-% set(gcf,'units','normalized','outerposition',[0 0 1 1])
-% end
-
-%NEEDS VISUAL CHANGES 
 function derivatives(imgOriginal, imgProcessed)
-    f = figure;
+    derivatesFigure = figure;
 
     [boundaries,labeledMatrix] = bwboundaries(imgProcessed,'noholes');
 
-    %Pannel to fit all of the subplots. useful to have a super title.
-    panel = uipanel('Parent',f,'BorderType','none'); 
+    panel = uipanel('Parent',derivatesFigure,'BorderType','none'); 
     panel.Title = 'Derivative of the objects boundaries '; 
     panel.TitlePosition = 'centertop'; 
     panel.FontSize = 14;
     panel.FontWeight = 'bold';
-
-    z=1;%aux variable to help printing subplots in correct order
+    
+    z=1;%z is to help printing subplots in correct order
     for i=1:length(boundaries)    
 
         [row, col] = find(labeledMatrix==i);
         croppedLabel = imcrop(imgOriginal,[(min(col)-10) (min(row)-10) ...
             (max(col)-min(col)+10) (max(row)-min(row)+10)]);
 
-        figure(f);
-        subplot(4,4,(z),'Parent',panel), imshow(croppedLabel);title(['Object id: ' num2str(i)]);
-
-        % Find the boundaries.  Each boundary is in a cell.
+        figure(derivatesFigure);
+        subplot(4,4,(z),'Parent',panel), imshow(croppedLabel);title(['Object id: ' num2str(i)]);4
+        % Find boundaries.
         boundaries = bwboundaries(labeledMatrix==i);
         for k = 1 : size(boundaries, 1)
           kBoundary = boundaries{k}; 
@@ -279,11 +226,12 @@ function derivatives(imgOriginal, imgProcessed)
           deltaY = kBoundary(:,1);
           dy = [];
           for m = 2:size(deltaX)
-              dy = [dy, deltaY(m)-deltaY(m-1)/deltaX(m)-deltaX(m-1)];
+              %derivate
+              dy = [dy, deltaX(m)-deltaX(m-1)/deltaY(m)-deltaY(m-1)];
               m = m + 1;
           end
           subplot(4,4,(z+1),'Parent',panel), plot(dy);
-        end    
+        end   
         z=z+2;    
     end
     set(gcf,'units','normalized','outerposition',[0 0 1 1])
