@@ -1,21 +1,3 @@
-
-
-% 1 - Number of objects in the image
-% 2 - Visualization centroid, perimeter and area
-% 3 - Relative distance of the objects
-% 4 - Derivative of the objects boundary
-% 5 - Ordering the objects depending on the area, perimeter, circularity or 
-% sharpness
-% 6 - Compute the amount of money
-% 7 - From a user selection of given object (the user should select one object,
-% generate a figure that shows an ordered list of objcets, i.e. from the
-% most similar to the less similar of the chosen object. The similarity
-% criteria can be one of the previously computed features in point 5.
-% 8 - Provide a heatmap of the image contents, where the hot color is (are) the
-% object(s) of interest: The object may be selected by the user; The user
-% may select several objects. Under this situation, several hot colors
-% should be displayed for the previously selected objects.
-
 function Projeto()
     clear all, close all
     threshold = 125;
@@ -23,8 +5,7 @@ function Projeto()
 
     imgOriginal = imread('MATERIAL/database/Moedas3.jpg');
 
-    % PREPROCESSING
-
+    % Feature Enhancing
     imgR = imgOriginal(:,:,1);
     BW = imgR >= threshold;
     se = strel('disk', 7);
@@ -57,7 +38,7 @@ function Information(imgOriginal, imgProcessed)
     totalAmount = getCoinValue(imgOriginal, 0);
     
     titleLine1 = strcat('Number of objects:',num2str(sz(2)),...
-        '    Amount of money:',num2str(totalAmount),'�');
+        '    Amount of money:',num2str(totalAmount),'€');
     titleLine3 = 'Click on a region to see information.';
     title(titleLine1);
     xlabel(titleLine3);
@@ -67,21 +48,21 @@ end
 function objectButtons(stats1, imgOriginal, imgProcessed)
     objIndex = find([stats1.Area] > 1000);
     for i = 1 : numel(objIndex)
-        box1 = InitDraw(i,objIndex,stats1, [1 0 0]);
+        box1 = InitDraw(i,objIndex,stats1, [1 0 0], [1 0 0 0.2]);
         set(box1,'buttondownfcn',{@ShowInfo,i,objIndex,imgOriginal,imgProcessed,stats1});
     end
 end
 
-function box = InitDraw(i,objIndex,stats,edgeColor)
+function box1 = InitDraw(i,objIndex,stats,edgeColor,faceColor)
     statsObj = stats(objIndex);
     boundingBoxI = statsObj(i).BoundingBox;
-    box = rectangle('Position',...
+    box1 = rectangle('Position',...
               [boundingBoxI(1),...
                boundingBoxI(2),...
                boundingBoxI(3),...
                boundingBoxI(4)],...
               'EdgeColor',edgeColor,...
-              'FaceColor',[1 0 0 0.2]);
+              'FaceColor',faceColor);
     text(statsObj(i).Centroid(1),...
          statsObj(i).Centroid(2),...
          'X',...
@@ -139,7 +120,7 @@ function ShowInfo(~,~,i,objIndex,imgOriginal, imgProcessed, stats)
                  'FontSize',12);
              
         end
-        box2 = InitDraw(index,objIndex,stats, [1 0 0]);
+        box2 = InitDraw(index,objIndex,stats, [1 0 0], [1 0 0 0.2]);
         set(box2,'buttondownfcn',{@ShowInfo,index,objIndex,imgOriginal, imgProcessed,stats});
     end
 end
@@ -148,8 +129,8 @@ function showOrder(imgProcessed, orderArray, stats, type)
    if(strcmp(type, 'Sharpness'))
        [B,L] = bwboundaries(imgProcessed,'noholes');
        stats1 = regionprops(L,'Area','Centroid','Image','Eccentricity', 'BoundingBox');
-       idxOfCoins = find([stats1.Eccentricity]);
-       statsObj1 = stats1(idxOfCoins);
+       objIndex = find([stats1.Eccentricity]);
+       statsObj1 = stats1(objIndex);
        for k = 1:length(B)
            sharpness = estimateSharpness(statsObj1(k).Image);
            indexValue = find(orderArray == sharpness);
@@ -194,44 +175,44 @@ function showOrder(imgProcessed, orderArray, stats, type)
        end
     end
 end
-
-
 function derivatives(imgOriginal, imgProcessed)
-    derivatesFigure = figure;
+    derivativesFigure = figure;
 
     [boundaries,labeledMatrix] = bwboundaries(imgProcessed,'noholes');
 
-    panel = uipanel('Parent',derivatesFigure,'BorderType','none'); 
+    panel = uipanel('Parent',derivativesFigure,'BorderType','none'); 
     panel.Title = 'Derivative of the objects boundaries '; 
     panel.TitlePosition = 'centertop'; 
     panel.FontSize = 14;
     panel.FontWeight = 'bold';
-    
-    z=1;%z is to help printing subplots in correct order
+
+    z=1; % to help printing subplots in correct order
     for i=1:length(boundaries)    
 
         [row, col] = find(labeledMatrix==i);
         croppedLabel = imcrop(imgOriginal,[(min(col)-10) (min(row)-10) ...
             (max(col)-min(col)+10) (max(row)-min(row)+10)]);
 
-        figure(derivatesFigure);
-        subplot(4,4,(z),'Parent',panel), imshow(croppedLabel);title(['Object id: ' num2str(i)]);4
+        figure(derivativesFigure);
+        subplot(4,4,(z),'Parent',panel), imshow(croppedLabel);
+        title(['Object id: ' num2str(i)]);
+
         % Find boundaries.
         boundaries = bwboundaries(labeledMatrix==i);
         for k = 1 : size(boundaries, 1)
           kBoundary = boundaries{k}; 
           % Get Xx.
           deltaX = kBoundary(:,2);
-         % Get Yy.
+          % Get Yy.
           deltaY = kBoundary(:,1);
           dy = [];
           for m = 2:size(deltaX)
-              %derivate
-              dy = [dy, deltaX(m)-deltaX(m-1)/deltaY(m)-deltaY(m-1)];
-              m = m + 1;
+                % derivate
+                dy = [dy, deltaX(m)-deltaX(m-1)/deltaY(m)-deltaY(m-1)];
+                m = m + 1;
           end
           subplot(4,4,(z+1),'Parent',panel), plot(dy);
-        end   
+        end    
         z=z+2;    
     end
     set(gcf,'units','normalized','outerposition',[0 0 1 1])
@@ -263,41 +244,46 @@ end
  function interface(i,imgOriginal,imgProcessed, stats)
         bg = uibuttongroup('Visible','off',...
             'Position',[0 0 .15 1],...
-            'SelectionChangedFcn',{@bselection,i,imgOriginal,imgProcessed,stats});
-        % Create three radio buttons in the button group.
+            'SelectionChangedFcn',{@interfaceHandler,i,imgOriginal,imgProcessed,stats});
+        
         uicontrol(bg,'Style','radiobutton',...
             'String','Order by Perimeter',...
-            'Position',[10 800 200 30],...
+            'Position',[10 450 200 30],...
             'HandleVisibility','off');
 
         uicontrol(bg,'Style','radiobutton',...
             'String','Order by Area',...
-            'Position',[10 700 200 30],...
+            'Position',[10 400 200 30],...
             'HandleVisibility','off');
 
         uicontrol(bg,'Style','radiobutton',...
             'String','Order by Circularity',...
-            'Position',[10 600 200 30],...
+            'Position',[10 350 200 30],...
             'HandleVisibility','off');
         
         uicontrol(bg,'Style','radiobutton',...
             'String','Order by Sharpness',...
-            'Position',[10 500 200 30],...
+            'Position',[10 300 200 30],...
             'HandleVisibility','off');
         
         uicontrol(bg,'Style','radiobutton',...
             'String','Amount of Money',...
-            'Position',[10 400 200 30],...
+            'Position',[10 250 200 30],...
             'HandleVisibility','off');
         
         uicontrol(bg,'Style','radiobutton',...
             'String','Derivative',...
-            'Position',[10 300 200 30],...
+            'Position',[10 200 200 30],...
             'HandleVisibility','off');
  
         uicontrol(bg,'Style','radiobutton',...
             'String','Order from selected object',...
-            'Position',[10 200 200 30],...
+            'Position',[10 150 200 30],...
+            'HandleVisibility','off');
+        
+        uicontrol(bg,'Style','radiobutton',...
+            'String','Heatmap',...
+            'Position',[10 50 200 30],...
             'HandleVisibility','off');
         
         uicontrol(bg,'Style','radiobutton',...
@@ -319,7 +305,7 @@ end
         xlabel('Click on a region to see information.');
  end
  
- function bselection(~,event,i,imgOriginal,imgProcessed, stats)
+ function interfaceHandler(~,event,i,imgOriginal,imgProcessed, stats)
         switch event.NewValue.String
             case 'Order by Perimeter'
                 clearScreen(imgOriginal,imgProcessed, stats, 'Objects ordered by Perimeter');
@@ -352,6 +338,9 @@ end
                     clearScreen(imgOriginal, imgProcessed, stats, 'Select the criteria for ordering')                
                     orderObjects(i, imgOriginal,imgProcessed);
                 end
+            case 'Heatmap'
+                clearScreen(imgOriginal,imgProcessed, stats, 'Heatmap');
+                heatmap(imgOriginal, imgProcessed);
             case 'Reset'
                  clf('reset');
                  Information(imgOriginal, imgProcessed) 
@@ -360,8 +349,8 @@ end
  end
     
  
-function coinAmount = getCoinValue(I, total)
-    [centers,radius] = imfindcircles(I,[40 90], 'Sensitivity',0.9);
+function coinAmount = getCoinValue(img, total)
+    [centers,radius] = imfindcircles(img,[40 90], 'Sensitivity',0.9);
     coinAmount = 0;
     for i = 1 : numel(radius)
         switch true
@@ -391,10 +380,10 @@ function coinAmount = getCoinValue(I, total)
                 coinValue = 2;
         end   
         if(total)
-            text(centers(i,1),centers(i,2)-20,[num2str(coinValue),'�'],...
+            text(centers(i,1),centers(i,2)-20,[num2str(coinValue),'€'],...
                 'color','green','HorizontalAlignment', 'center',...
                 'VerticalAlignment', 'middle','FontSize',15,'FontWeight','bold');
-            titleLine1 = strcat('Amount of money:',num2str(coinAmount),'�');
+            titleLine1 = strcat('Amount of money:',num2str(coinAmount),'€');
             title(titleLine1);
         end
     end
@@ -441,8 +430,8 @@ function selectObject(clickedIndex,stats,imgOriginal,imgProcessed, circularities
             BBcolors = [1,0,0];
         end
 
-        box = InitDraw(i, objIndex, statsObj, BBcolors);
-        set(box,...
+        box1 = InitDraw(i, objIndex, statsObj, BBcolors, [1 0 0 0.2]);
+        set(box1,...
             'buttondownfcn',...
             {@selectObjectCallback,...
             i,...
@@ -600,4 +589,73 @@ end
 
 
 
+% Ordered by the last clicked
+function heatmap(imgOriginal,imgProcessed)
+    clf('reset');
+    
+    [labels num] = bwlabel(imgProcessed,8);
+    stats = regionprops(labels,'Area','BoundingBox', 'Centroid');
+    
+    objIndex = find([stats.Area] > 1000);
+    
+    statsObj = stats(objIndex);
 
+    imshow(mat2gray(labels)); title('Heatmap');
+    colors = colormap(jet(18));
+
+    for i = 1 : numel(objIndex)
+        box1 = InitDraw(i, objIndex, stats, [0 0 0 0], [0 0 0 0.01]);
+        set(box1,'buttondownfcn',{@ClickEvent,i,objIndex,imgOriginal,imgProcessed,stats});
+    end
+
+end
+
+
+function ClickEvent(~,~,clickedIndex,objIndex,imgOriginal,imgProcessed,stats)
+    clf('reset');
+    
+    clickHistory = [];
+    for i = 1 : numel(objIndex)
+        if(objIndex(i) == clickedIndex) 
+            last = objIndex(i);
+        else
+            clickHistory = [clickHistory objIndex(i)];
+        end
+    end
+    clickHistory = [clickHistory last];
+
+    % for example
+    % if clicked in object nº1
+    % clickHistory is [2 3 4 5 6 1]
+    % when remapping labels the should be 1 - the earliest to 6 - the latest
+    % so, what we want is to change:
+    % 1 2 3 4 5 6
+    % with:
+    % 6 1 2 3 4 5
+
+    [originalIndexes,sortedIndexes] = sort(clickHistory);
+    [lb num]= bwlabel(imgProcessed,8);
+    lb = changem(lb,sortedIndexes,originalIndexes);
+
+    imshow(mat2gray(lb)); title('Heatmap');
+    colors = colormap(jet(18));
+
+    for i = 1 : numel(clickHistory)
+        box1 = InitDraw(i, clickHistory, stats, [0 0 0 0], [1 1 1 0.01]);
+        set(box1,'buttondownfcn',{@ClickEvent,clickHistory(i),clickHistory,imgOriginal,imgProcessed,stats});
+    end
+
+
+    bg = uibuttongroup('Visible','off',...
+            'Position',[0 0 .15 1],...
+            'SelectionChangedFcn',{@interfaceHandler,clickedIndex,imgOriginal,imgProcessed,stats});
+        
+    uicontrol(bg,'Style','radiobutton',...
+            'String','Reset',...
+            'Position',[10 0 100 30],...
+            'HandleVisibility','off');
+
+    bg.Visible = 'on';
+    set(bg,'selectedobject',[]);
+
+end
